@@ -3,26 +3,54 @@ import './index.css';
 
 const API_BASE = 'http://localhost:3001/api';
 
+const SERVICES = [
+  { id: 'CHECK_BALANCE', label: 'Check Balance', icon: '💰' },
+  { id: 'MINI_STATEMENT', label: 'Mini Statement', icon: '📄' },
+  { id: 'BLOCK_CARD', label: 'Block Card', icon: '🚫' },
+  { id: 'UPDATE_CONTACT', label: 'Update Contact', icon: '📱' },
+  { id: 'LOAN_ENQUIRY', label: 'Loan Enquiry', icon: '📊' },
+  { id: 'ESCALATE_AGENT', label: 'Talk to Agent', icon: '📞' }
+];
+
 export default function App() {
   const [screen, setScreen] = useState('welcome');
   const [sessionId, setSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  
+  const [modalState, setModalState] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [resultData, setResultData] = useState(null);
-  const [errorText, setErrorText] = useState('');
-
+  const [otpError, setOtpError] = useState('');
+  
   const chatEndRef = useRef(null);
-  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isTyping]);
 
   const headers = { 
     'Content-Type': 'application/json',
     'x-session-id': sessionId
+  };
+
+  const startSession = async () => {
+    setModalState('processing');
+    try {
+      const res = await fetch(`${API_BASE}/session/start`, { method: 'POST' });
+      const data = await res.json();
+      setSessionId(data.sessionId);
+      setMessages([{ sender: 'bot', text: 'Welcome to Smart Banking Assistant. How may I assist you today?' }]);
+      setScreen('dashboard');
+    } catch (e) {
+      console.error(e);
+      alert('Failed to connect to backend.');
+    } finally {
+      setModalState(null);
+    }
   };
 
   const endSession = async () => {
@@ -32,32 +60,18 @@ export default function App() {
     setSessionId(null);
     setScreen('welcome');
     setMessages([]);
-    setPendingAction(null);
+    setModalState(null);
     setResultData(null);
-    setErrorText('');
   };
 
-  const startSession = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/session/start`, { method: 'POST' });
-      const data = await res.json();
-      setSessionId(data.sessionId);
-      setScreen('services');
-      setErrorText('');
-    } catch (e) {
-      setErrorText('Failed to start session. Backend might be down.');
-    }
-  };
-
-  const selectService = async (serviceName) => {
-    sendMessage(serviceName);
-  };
-
-  const sendMessage = async (text) => {
+  const sendMessage = async (text, hideFromUI = false) => {
     if (!text.trim()) return;
-    const newMsgs = [...messages, { sender: 'user', text }];
-    setMessages(newMsgs);
+    
+    if (!hideFromUI) {
+      setMessages(prev => [...prev, { sender: 'user', text }]);
+    }
     setInputValue('');
+    setIsTyping(true);
 
     try {
       const res = await fetch(`${API_BASE}/conversation/message`, {
@@ -66,34 +80,54 @@ export default function App() {
         body: JSON.stringify({ text })
       });
       const data = await res.json();
-      setMessages([...newMsgs, { sender: 'bot', text: data.text }]);
       
-      if (data.action) {
-        if (data.action === 'ESCALATE_AGENT') {
-          setTimeout(() => setScreen('escalation'), 1500);
-        } else if (data.action === 'LOAN_ENQUIRY') {
-          setTimeout(() => executeAction(data.action), 1500);
-        } else {
-          setPendingAction(data.action);
-          setTimeout(() => startOtpFlow(), 1500);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { sender: 'bot', text: data.text }]);
+        
+        if (data.action) {
+          handleAction(data.action);
         }
-      }
+      }, 1000); // Simulate network delay
+      
     } catch (e) {
-      setMessages([...newMsgs, { sender: 'bot', text: 'Sorry, I am having trouble connecting to the system.' }]);
+      setIsTyping(false);
+      setMessages(prev => [...prev, { sender: 'bot', text: 'Sorry, I encountered a connection issue.' }]);
     }
   };
 
+  const handleAction = (action) => {
+    if (action === 'ESCALATE_AGENT') {
+      setModalState('escalated');
+    } else if (action === 'LOAN_ENQUIRY') {
+      executeAction(action);
+    } else {
+      setPendingAction(action);
+      startOtpFlow();
+    }
+  };
+
+  const triggerService = (service) => {
+    // Kiosk acts as direct input: bypass chatbot intent API entirely
+    setMessages(prev => [...prev, { sender: 'user', text: `Selected: ${service.label}` }]);
+    handleAction(service.id);
+  };
+
   const startOtpFlow = async () => {
+    setModalState('processing');
     try {
       await fetch(`${API_BASE}/auth/request-otp`, { method: 'POST', headers });
-      setScreen('otp');
-      setErrorText('');
+      setOtpError('');
+      setModalState('otp');
     } catch (e) {
-      setErrorText('Failed to request OTP');
+      setModalState(null);
+      alert('Failed to request OTP');
     }
   };
 
   const verifyOtp = async (otp) => {
+    if (otp.length !== 6) return;
+    setModalState('processing');
     try {
       const res = await fetch(`${API_BASE}/auth/verify-otp`, {
         method: 'POST',
@@ -104,14 +138,17 @@ export default function App() {
         executeAction(pendingAction);
       } else {
         const data = await res.json();
-        setErrorText(data.error || 'Invalid OTP');
+        setOtpError(data.error || 'Invalid OTP');
+        setModalState('otp');
       }
     } catch (e) {
-      setErrorText('Error verifying OTP');
+      setOtpError('Error verifying OTP');
+      setModalState('otp');
     }
   };
 
   const executeAction = async (action) => {
+    setModalState('processing');
     try {
       let endpoint = '';
       let body = {};
@@ -122,7 +159,7 @@ export default function App() {
         case 'BLOCK_CARD': endpoint = '/banking/block-card'; break;
         case 'UPDATE_CONTACT': 
           endpoint = '/banking/update-contact'; 
-          body = { newPhone: '+1-555-9999' }; // Hardcoded demo value
+          body = { newPhone: '+91-9999999999' }; 
           break;
         case 'LOAN_ENQUIRY': endpoint = '/banking/loan-enquiry'; break;
         default: return;
@@ -136,140 +173,186 @@ export default function App() {
       
       const data = await res.json();
       setResultData(data);
-      setScreen('result');
+      setModalState('result');
+      
+      setMessages(prev => [...prev, { sender: 'bot', text: data.message }]);
+      
     } catch (e) {
-      setErrorText('Error processing action');
+      alert('Error processing action');
+      setModalState(null);
     }
   };
 
+  const closeOverlay = () => {
+    setModalState(null);
+    setResultData(null);
+    setPendingAction(null);
+  };
+
   return (
-    <div className="kiosk-container">
+    <div className="kiosk-wrapper">
       <header className="kiosk-header">
-        <h1>Global Standard Bank</h1>
+        <div className="brand">
+          <h1>GLOBAL STANDARD BANK</h1>
+          <span className="subtitle">Self-Service Kiosk</span>
+        </div>
       </header>
 
-      <div className="kiosk-content" style={{ display: screen === 'welcome' ? 'flex' : 'none' }}>
-        <div className="center-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <h2 className="page-title">Welcome to Self-Service Kiosk</h2>
-          {errorText && <p className="error-text">{errorText}</p>}
-          <button className="btn btn-primary" onClick={startSession} style={{ padding: '30px 40px', fontSize: '2rem' }}>
-            START SESSION
-          </button>
-        </div>
-      </div>
-
-      <div className="kiosk-content" style={{ display: screen === 'services' ? 'flex' : 'none', flexDirection: 'row', gap: '30px', padding: '20px' }}>
-        {/* Left Side: Services */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <h2 className="page-title" style={{ textAlign: 'center' }}>Select a Service</h2>
-          <div className="grid-cards">
-            <button className="card-btn" style={{ padding: '25px 15px', fontSize: '1.2rem' }} onClick={() => selectService('Check Balance')}>Check Balance</button>
-            <button className="card-btn" style={{ padding: '25px 15px', fontSize: '1.2rem' }} onClick={() => selectService('Mini Statement')}>Mini Statement</button>
-            <button className="card-btn" style={{ padding: '25px 15px', fontSize: '1.2rem' }} onClick={() => selectService('Block Card')}>Block Card</button>
-            <button className="card-btn" style={{ padding: '25px 15px', fontSize: '1.2rem' }} onClick={() => selectService('Update Contact')}>Update Contact</button>
-            <button className="card-btn" style={{ padding: '25px 15px', fontSize: '1.2rem' }} onClick={() => selectService('Loan Enquiry')}>Loan Enquiry</button>
-            <button className="card-btn" style={{ padding: '25px 15px', fontSize: '1.2rem' }} onClick={() => selectService('Talk to Agent')}>Talk to Agent</button>
+      <main className="kiosk-body">
+        {screen === 'welcome' && (
+          <div className="welcome-screen">
+            <h2>Welcome to Your Digital Bank</h2>
+            <p style={{ fontSize: '1.2rem', color: 'var(--text-light)', marginBottom: '40px' }}>
+              Experience fast, secure, and smart self-service banking.
+            </p>
+            <button className="btn btn-primary" style={{ padding: '20px 48px', fontSize: '1.5rem' }} onClick={startSession}>
+              START SESSION
+            </button>
           </div>
-          <div className="home-btn-container">
-            <button className="btn btn-secondary" onClick={endSession}>END SESSION</button>
-          </div>
-        </div>
+        )}
 
-        {/* Right Side: Chatbot */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div className="chat-window" style={{ flex: 1, border: '4px solid var(--black)', backgroundColor: 'var(--white)' }}>
-            <div className="chat-history" style={{ display: 'flex', flexDirection: 'column' }}>
-              {messages.length === 0 && (
-                <div className="chat-message msg-bot">
-                  Hello! How can I help you today? You can select an option on the left or type your request below.
-                </div>
-              )}
-              {messages.map((m, i) => (
-                <div key={i} className={`chat-message ${m.sender === 'bot' ? 'msg-bot' : 'msg-user'}`}>
-                  {m.text}
-                </div>
-              ))}
-              <div ref={chatEndRef} />
+        {screen === 'dashboard' && (
+          <div className="dashboard-layout">
+            <div className="left-panel">
+              <h3 className="section-title">Select Service</h3>
+              <div className="services-grid">
+                {SERVICES.map(svc => (
+                  <div key={svc.id} className="service-card" onClick={() => triggerService(svc)}>
+                    <div className="service-icon">{svc.icon}</div>
+                    <div className="service-label">{svc.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="chat-actions">
-              <input 
-                className="chat-input" 
-                type="text" 
-                placeholder="Type your request here..." 
-                value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendMessage(inputValue)}
-              />
-              <button className="btn btn-primary chat-send" onClick={() => sendMessage(inputValue)}>SEND</button>
+
+            <div className="right-panel">
+              <div className="chat-header">
+                🤖 AI Banking Assistant
+              </div>
+              <div className="chat-history">
+                {messages.map((m, i) => (
+                  <div key={i} className={`chat-bubble ${m.sender === 'bot' ? 'bot-msg' : 'user-msg'}`}>
+                    {m.text}
+                  </div>
+                ))}
+                {isTyping && (
+                  <div className="typing-indicator">Assistant is typing...</div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+              <div className="chat-input-area">
+                <input 
+                  className="chat-input" 
+                  type="text" 
+                  placeholder="Type your request here..." 
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendMessage(inputValue)}
+                />
+                <button className="send-btn" onClick={() => sendMessage(inputValue)}>
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {screen === 'dashboard' && (
+        <footer className="kiosk-footer">
+          <button className="btn btn-outline" onClick={endSession}>
+            End Session
+          </button>
+        </footer>
+      )}
+
+      {modalState === 'processing' && (
+        <div className="full-overlay">
+          <div className="spinner"></div>
+          <h2>Processing your request...</h2>
+        </div>
+      )}
+
+      {modalState === 'otp' && (
+        <div className="full-overlay">
+          <div className="modal-card">
+            <h2 className="modal-title">Verification Required</h2>
+            <p className="modal-desc">Please enter the 6-digit OTP sent to your registered mobile number.</p>
+            <input 
+              type="text" 
+              className="otp-input" 
+              maxLength={6} 
+              id="otpInput"
+              autoFocus
+            />
+            {otpError && <p style={{ color: 'var(--primary-red)', marginBottom: '16px' }}>{otpError}</p>}
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+              <button className="btn btn-outline" onClick={closeOverlay}>Cancel</button>
+              <button className="btn btn-primary" onClick={() => verifyOtp(document.getElementById('otpInput').value)}>
+                Verify
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="kiosk-content" style={{ display: screen === 'otp' ? 'flex' : 'none' }}>
-        <div className="center-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <h2 className="page-title">Identity Verification</h2>
-          <p style={{ fontSize: '1.5rem', marginBottom: '30px' }}>Please enter the 6-digit OTP sent to your registered device.</p>
-          <p style={{ fontSize: '1rem', color: 'gray', marginBottom: '10px' }}>(Hint: Check backend logs for demo OTP)</p>
-          <input 
-            type="text" 
-            className="big-input" 
-            maxLength={6} 
-            placeholder="• • • • • •" 
-            id="otpInput"
-          />
-          {errorText && <p className="error-text">{errorText}</p>}
-          <button className="btn btn-primary" onClick={() => verifyOtp(document.getElementById('otpInput').value)}>
-            VERIFY & PROCEED
-          </button>
-          <button className="btn btn-secondary" onClick={endSession}>CANCEL SESSION</button>
-        </div>
-      </div>
-
-      <div className="kiosk-content" style={{ display: screen === 'result' ? 'flex' : 'none' }}>
-        <div className="center-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <h2 className="page-title">Service Request Completed</h2>
-          <div className="results-box">
-            {resultData && (
-              <>
-                <p style={{ fontWeight: 'bold', marginBottom: '20px' }}>{resultData.message}</p>
-                {resultData.balance && <p>Balance: $ {resultData.balance}</p>}
-                {resultData.transactions && (
-                  <ul style={{ paddingLeft: '20px', fontSize: '1.2rem', marginTop: '10px' }}>
+      {modalState === 'result' && resultData && (
+        <div className="full-overlay">
+          <div className="modal-card" style={{ maxWidth: '800px' }}>
+            <div className="result-msg">{resultData.message}</div>
+            
+            <div className="result-content">
+              {resultData.balance && <p><strong>Available Balance:</strong> ₹{resultData.balance.toLocaleString('en-IN')}</p>}
+              
+              {resultData.transactions && (
+                <div>
+                  <strong>Recent Transactions:</strong>
+                  <ul style={{ listStyle: 'none', padding: 0, marginTop: '12px' }}>
                     {resultData.transactions.map((t, idx) => (
-                      <li key={idx} style={{ padding: '5px 0' }}>{t.date} | {t.description} | ${t.amount}</li>
+                      <li key={idx} style={{ padding: '8px 0', borderBottom: '1px solid var(--gray-border)', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{t.date} - {t.description}</span>
+                        <strong style={{ color: t.amount < 0 ? 'var(--primary-red)' : '#059669' }}>
+                          ₹{Math.abs(t.amount).toLocaleString('en-IN')} {t.amount < 0 ? 'DR' : 'CR'}
+                        </strong>
+                      </li>
                     ))}
                   </ul>
-                )}
-                {resultData.eligibleAmount && (
-                  <div>
-                    <p>Eligible Amount: {resultData.eligibleAmount}</p>
-                    <p>Interest Rate: {resultData.interestRate}</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-          <button className="btn btn-primary" onClick={() => setScreen('services')}>RETURN TO MENU</button>
-          <button className="btn btn-secondary" onClick={endSession}>FINISH & LOGOUT</button>
-        </div>
-      </div>
+                </div>
+              )}
+              
+              {resultData.eligibleAmount && (
+                <div>
+                  <p><strong>Eligible Amount:</strong> {resultData.eligibleAmount}</p>
+                  <p><strong>Interest Rate:</strong> {resultData.interestRate}</p>
+                </div>
+              )}
+            </div>
 
-      <div className="kiosk-content" style={{ display: screen === 'escalation' ? 'flex' : 'none' }}>
-        <div className="center-content" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <h2 className="page-title">Connecting to Human Agent</h2>
-          <div className="results-box" style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '1.5rem', marginBottom: '20px' }}>Please wait while we connect you to an agent.</p>
-            <p style={{ fontWeight: 'bold' }}>Agent Name: Alice</p>
-            <p style={{ color: 'gray' }}>Estimated wait time: 2 minutes</p>
-            <div style={{ marginTop: '30px', borderTop: '2px solid var(--black)', paddingTop: '20px' }}>
-              <p style={{ fontSize: '1.2rem' }}>Session context has been securely forwarded to the agent.</p>
+            <div className="quick-actions">
+              <button className="btn btn-outline" onClick={closeOverlay}>Done</button>
+              {pendingAction === 'CHECK_BALANCE' && (
+                <button className="btn btn-primary" onClick={() => { closeOverlay(); sendMessage('Mini Statement'); }}>
+                  View Statement
+                </button>
+              )}
             </div>
           </div>
-          <button className="btn btn-primary" onClick={endSession}>END CALL & LOGOUT</button>
         </div>
-      </div>
+      )}
 
+      {modalState === 'escalated' && (
+        <div className="full-overlay">
+          <div className="modal-card">
+            <h2 className="modal-title">Connecting to Agent</h2>
+            <div className="spinner"></div>
+            <p className="modal-desc">Connecting to Alice... (Estimated wait: 2 minutes)</p>
+            <p style={{ color: 'var(--text-light)', fontSize: '0.9rem' }}>Securely transferring session context.</p>
+            <div style={{ marginTop: '24px' }}>
+              <button className="btn btn-primary" onClick={endSession}>End Call & Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
