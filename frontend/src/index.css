@@ -1,0 +1,230 @@
+:root {
+  --primary-red: #d32f2f;
+  --dark-red: #b71c1c;
+  --white: #ffffff;
+  --black: #000000;
+  --gray-light: #f5f5f5;
+  --gray-borders: #e0e0e0;
+  --text-dark: #212121;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  background-color: var(--gray-light);
+  color: var(--text-dark);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Kiosk Container Wrapper */
+.kiosk-container {
+  width: 100vw;
+  height: 100vh;
+  max-width: 1024px;   /* Standard tablet/kiosk max width */
+  max-height: 768px;   /* Standard proportions */
+  background-color: var(--white);
+  border: 4px solid var(--black);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.kiosk-header {
+  background-color: var(--primary-red);
+  color: var(--white);
+  padding: 24px;
+  text-align: center;
+  border-bottom: 4px solid var(--black);
+}
+
+.kiosk-header h1 {
+  font-size: 2.5rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.kiosk-content {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.center-content {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.btn {
+  background-color: var(--black);
+  color: var(--white);
+  border: 2px solid var(--black);
+  padding: 20px 40px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+.btn:hover {
+  background-color: var(--white);
+  color: var(--black);
+}
+
+.btn-primary {
+  background-color: var(--primary-red);
+  border-color: var(--primary-red);
+}
+.btn-primary:hover {
+  background-color: var(--white);
+  color: var(--primary-red);
+  border-color: var(--primary-red);
+}
+
+.btn-secondary {
+  background-color: var(--white);
+  color: var(--black);
+  border-color: var(--black);
+}
+.btn-secondary:hover {
+  background-color: var(--black);
+  color: var(--white);
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.card-btn {
+  background-color: var(--white);
+  border: 4px solid var(--black);
+  padding: 40px 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--black);
+  cursor: pointer;
+}
+.card-btn:hover {
+  background-color: var(--primary-red);
+  color: var(--white);
+  border-color: var(--primary-red);
+}
+
+/* Chat/Assistant UI */
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid var(--gray-borders);
+  background-color: var(--gray-light);
+}
+
+.chat-history {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chat-message {
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  max-width: 80%;
+}
+
+.msg-bot {
+  background-color: var(--white);
+  border: 2px solid var(--black);
+  align-self: flex-start;
+  margin-right: auto;
+}
+
+.msg-user {
+  background-color: var(--primary-red);
+  color: var(--white);
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.chat-actions {
+  display: flex;
+  padding: 20px;
+  border-top: 2px solid var(--gray-borders);
+  background-color: var(--white);
+  gap: 15px;
+}
+
+.chat-input {
+  flex: 1;
+  font-size: 1.5rem;
+  padding: 15px 20px;
+  border: 2px solid var(--black);
+}
+
+.chat-send {
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  margin: 0;
+  max-width: 200px;
+}
+
+.big-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  font-size: 2rem;
+  text-align: center;
+  border: 4px solid var(--black);
+  margin-bottom: 30px;
+}
+
+.results-box {
+  background: var(--white);
+  border: 4px solid var(--black);
+  padding: 40px;
+  font-size: 1.5rem;
+  text-align: left;
+  margin-bottom: 30px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+  font-weight: bold;
+  color: var(--black);
+}
+
+.home-btn-container {
+  margin-top: auto;
+  padding-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.error-text {
+  color: var(--primary-red);
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
