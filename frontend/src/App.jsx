@@ -109,7 +109,6 @@ export default function App() {
 
   const triggerService = (service) => {
     // Kiosk acts as direct input: bypass chatbot intent API entirely
-    setMessages(prev => [...prev, { sender: 'user', text: `Selected: ${service.label}` }]);
     handleAction(service.id);
   };
 
@@ -174,8 +173,6 @@ export default function App() {
       const data = await res.json();
       setResultData(data);
       setModalState('result');
-      
-      setMessages(prev => [...prev, { sender: 'bot', text: data.message }]);
       
     } catch (e) {
       alert('Error processing action');
