@@ -344,11 +344,16 @@ export default function App() {
           </div>
         </div>
 
-        {/* CENTRE: Services */}
+        {/* CENTRE: Services (Right-aligned now since 3rd col is removed) */}
         <div className="centre-panel">
-          <div className="centre-top">
-            <div className="centre-greeting">What can we help you with?</div>
-            <div className="centre-sub">Touch a service, speak your request, or insert your card to begin</div>
+          <div className="centre-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <div className="centre-greeting">What can we help you with?</div>
+              <div className="centre-sub">Touch a service, speak your request, or insert your card to begin</div>
+            </div>
+            <button className="btn btn-outline" style={{ borderColor: '#DA251C', color: '#DA251C', backgroundColor: '#fff' }} onClick={endSession}>
+               End Session
+            </button>
           </div>
           <div className="divider"></div>
 
@@ -362,73 +367,7 @@ export default function App() {
             ))}
           </div>
 
-          <div className="recent-box">
-            <div className="recent-title">Recent transactions (last login)</div>
-            <div className="txn-row">
-              <div><div className="txn-desc">NEFT — Ramesh Kumar</div><div className="txn-date">15 Mar 2026</div></div>
-              <div className="txn-amt txn-dr">− ₹12,500</div>
-            </div>
-            <div className="txn-row">
-              <div><div className="txn-desc">UPI Credit — GPay</div><div className="txn-date">14 Mar 2026</div></div>
-              <div className="txn-amt txn-cr">+ ₹8,000</div>
-            </div>
-            <div className="txn-row">
-              <div><div className="txn-desc">ATM Withdrawal</div><div className="txn-date">13 Mar 2026</div></div>
-              <div className="txn-amt txn-dr">− ₹5,000</div>
-            </div>
-          </div>
-        </div>
 
-        {/* RIGHT: Auth + Account */}
-        <div className="right-panel">
-          <div>
-            <div className="auth-title">Authenticate to begin</div>
-            <button className="auth-btn primary" onClick={() => handleAction('CHECK_BALANCE')}>
-              <svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-              <div>
-                <div className="auth-btn-name">Insert / Tap Card</div>
-                <div className="auth-btn-sub">EMV chip or NFC contactless</div>
-              </div>
-            </button>
-            <button className="auth-btn secondary" onClick={startOtpFlow}>
-              <svg viewBox="0 0 24 24" fill="#718096"><path d="M20 18.5v.5H4v-.5c0-2.2 2.69-4 6-4h4c3.31 0 6 1.8 6 4zM12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/></svg>
-              <div>
-                <div className="auth-btn-name">Mobile OTP</div>
-                <div className="auth-btn-sub">Send OTP to registered mobile</div>
-              </div>
-            </button>
-          </div>
-
-          <div className="divider-h"></div>
-
-          <div className="acct-preview">
-            <div className="acct-label">Authenticated account</div>
-            <div className="acct-name">Priya Sharma</div>
-            <div className="acct-num">•••• •••• 4521</div>
-            <div className="acct-bal-row">
-              <div>
-                <div className="acct-bal-label">Available balance</div>
-                <div className="acct-bal">₹1,84,320</div>
-              </div>
-              <svg width="38" height="38" viewBox="0 0 32 32" fill="none" style={{ flexShrink: 0, marginLeft: '16px' }}>
-                <rect width="32" height="32" rx="5" fill="rgba(255,255,255,.15)"/>
-                <path d="M5 7 L5 20 Q5 26 11 26 Q17 26 17 20 L17 7" stroke="#DA251C" strokeWidth="3" fill="none" strokeLinecap="round"/>
-                <path d="M17 7 L17 26 M17 7 L25 26 M25 7 L25 26" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
-          </div>
-
-          <button className="auth-btn danger" onClick={endSession} style={{marginTop: 'auto', marginBottom: '8px'}}>
-             <div>
-                <div className="auth-btn-name">End Secure Session</div>
-                <div className="auth-btn-sub">Logout and clear data</div>
-             </div>
-          </button>
-
-          <div className="status-row">
-            <div className="status-dot"></div>
-            <span className="status-txt">Secure session · RBI compliant</span>
-          </div>
         </div>
 
       </div>{/* /screen */}

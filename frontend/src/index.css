@@ -24,7 +24,7 @@ body {
   flex: 1;
   width: 100%;
   display: grid;
-  grid-template-columns: 320px 1fr 320px;
+  grid-template-columns: 320px 1fr;
   overflow: hidden;
 }
 
