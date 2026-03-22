@@ -1,0 +1,405 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.scene { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 6px 0; }
+.scene-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+
+/* ── physical shell ── */
+.shell {
+  width: 100%;
+  background: #111827;
+  border-radius: 12px;
+  border: 3px solid #1f2937;
+  overflow: hidden;
+  position: relative;
+}
+.shell-inner {
+  border: 6px solid #0a0f1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── screen ── */
+.screen {
+  width: 100%;
+  background: #f0f4f8;
+  display: grid;
+  grid-template-columns: 220px 1fr 200px;
+  min-height: 260px;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  background: #00579C;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.left-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; right: -30px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(218,37,28,.18);
+}
+.left-panel::before {
+  content: '';
+  position: absolute;
+  top: 80px; left: -20px;
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.06);
+}
+.logo-bar {
+  background: #003d7a;
+  padding: 11px 14px 9px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.logo-name { line-height: 1.1; }
+.logo-name-main { font-size: 14px; font-weight: 800; color: #fff; font-family: Arial Black, sans-serif; letter-spacing: .3px; }
+.logo-name-sub { font-size: 7px; color: #B8D4F0; letter-spacing: .6px; font-family: Arial, sans-serif; }
+.slogan-badge { margin: 0 14px 10px; display: block; }
+.slogan-txt { font-size: 7px; background: #DA251C; color: #fff; padding: 2px 8px; border-radius: 3px; font-weight: 700; letter-spacing: .3px; font-family: Arial, sans-serif; display: inline-block; }
+
+.avatar-block { padding: 10px 14px 6px; display: flex; align-items: center; gap: 10px; }
+.avatar-circle {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 2px solid rgba(255,255,255,.3);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.avatar-circle svg { width: 22px; height: 22px; fill: #fff; }
+.avatar-txt { }
+.avatar-name { font-size: 11px; font-weight: 700; color: #fff; font-family: Arial, sans-serif; }
+.avatar-role { font-size: 7.5px; color: #B8D4F0; font-family: Arial, sans-serif; }
+
+.wave-col { display: flex; align-items: flex-end; gap: 2.5px; padding: 8px 14px 4px; }
+.wave-col span { display: block; width: 3px; border-radius: 2px; background: rgba(255,255,255,.7); animation: wv 1.1s ease-in-out infinite; }
+.wave-col span:nth-child(1){ height:7px;  animation-delay:0s }
+.wave-col span:nth-child(2){ height:14px; animation-delay:.1s }
+.wave-col span:nth-child(3){ height:20px; animation-delay:.2s }
+.wave-col span:nth-child(4){ height:11px; animation-delay:.3s }
+.wave-col span:nth-child(5){ height:17px; animation-delay:.25s }
+.wave-col span:nth-child(6){ height:9px;  animation-delay:.15s }
+.wave-col span:nth-child(7){ height:15px; animation-delay:.35s }
+@keyframes wv { 0%,100%{transform:scaleY(.4);opacity:.5} 50%{transform:scaleY(1);opacity:1} }
+
+.listening-txt { font-size: 8px; color: #B8D4F0; font-family: Arial, sans-serif; padding: 0 14px 6px; }
+
+.ai-bubble {
+  margin: 6px 12px 8px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px 8px 8px 2px;
+  padding: 8px 10px;
+  font-size: 8px; color: #fff; font-family: Arial, sans-serif; line-height: 1.55;
+  flex: 1;
+}
+.ai-bubble strong { color: #DA251C; background: #fff; padding: 0 3px; border-radius: 2px; font-size: 7px; }
+
+.lang-chips { display: flex; flex-wrap: wrap; gap: 3px; padding: 0 12px 10px; }
+.lc { font-size: 7px; padding: 2px 6px; border-radius: 10px; font-family: Arial, sans-serif; cursor: pointer; }
+.lc-on  { background: #DA251C; color: #fff; font-weight: 700; }
+.lc-off { background: rgba(255,255,255,.12); color: #B8D4F0; }
+
+/* CENTRE PANEL */
+.centre-panel {
+  background: #fff;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.centre-top { margin-bottom: 10px; }
+.centre-greeting { font-size: 15px; font-weight: 800; color: #00579C; font-family: Arial Black, sans-serif; }
+.centre-sub { font-size: 8.5px; color: #718096; font-family: Arial, sans-serif; margin-top: 2px; }
+.divider { height: 2px; background: linear-gradient(90deg, #DA251C 0%, #00579C 60%, transparent 100%); border-radius: 1px; margin-bottom: 10px; }
+
+.svc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.svc-card {
+  border-radius: 8px;
+  padding: 10px 8px 8px;
+  text-align: center;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: border-color .15s;
+  position: relative;
+  overflow: hidden;
+}
+.svc-card.b { background: #EBF4FF; border-color: #B8D4F0; }
+.svc-card.r { background: #FEF2F2; border-color: #FECACA; }
+.svc-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+.svc-card.b::after { background: #00579C; }
+.svc-card.r::after { background: #DA251C; }
+.svc-card svg { width: 18px; height: 18px; margin-bottom: 4px; }
+.svc-card-name { font-size: 8px; font-weight: 700; font-family: Arial, sans-serif; }
+.svc-card.b .svc-card-name { color: #00579C; }
+.svc-card.r .svc-card-name { color: #DA251C; }
+.svc-card-desc { font-size: 6.5px; color: #718096; font-family: Arial, sans-serif; margin-top: 1px; }
+
+/* last row: 2 buttons wide */
+.svc-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+/* recent txn mini */
+.recent-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; }
+.recent-title { font-size: 7.5px; font-weight: 700; color: #00579C; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+.txn-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: .5px solid #e2e8f0; }
+.txn-row:last-child { border-bottom: none; }
+.txn-desc { font-size: 8px; color: #374151; font-family: Arial, sans-serif; }
+.txn-date { font-size: 7px; color: #9CA3AF; font-family: Arial, sans-serif; }
+.txn-amt { font-size: 8.5px; font-weight: 700; font-family: Arial, sans-serif; }
+.txn-cr { color: #16a34a; }
+.txn-dr { color: #DA251C; }
+
+/* RIGHT PANEL */
+.right-panel {
+  background: #f8fafc;
+  border-left: 1px solid #e2e8f0;
+  padding: 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.auth-section { }
+.auth-title { font-size: 8px; font-weight: 700; color: #00579C; text-transform: uppercase; letter-spacing: .5px; font-family: Arial, sans-serif; margin-bottom: 7px; }
+.auth-btn {
+  border-radius: 7px; padding: 8px 8px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+}
+.auth-btn.primary { background: #00579C; }
+.auth-btn.secondary { background: #fff; border: 1px solid #e2e8f0; }
+.auth-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.auth-btn-txt { }
+.auth-btn-name { font-size: 8.5px; font-weight: 700; font-family: Arial, sans-serif; }
+.auth-btn.primary .auth-btn-name { color: #fff; }
+.auth-btn.secondary .auth-btn-name { color: #1a365d; }
+.auth-btn-sub { font-size: 6.5px; font-family: Arial, sans-serif; }
+.auth-btn.primary .auth-btn-sub { color: #B8D4F0; }
+.auth-btn.secondary .auth-btn-sub { color: #9CA3AF; }
+
+.divider-h { height: .5px; background: #e2e8f0; margin: 0; }
+
+.acct-preview { background: #00579C; border-radius: 8px; padding: 9px 10px; }
+.acct-label { font-size: 7px; color: #B8D4F0; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+.acct-name { font-size: 11px; font-weight: 700; color: #fff; font-family: Arial, sans-serif; }
+.acct-num { font-size: 8px; color: #B8D4F0; font-family: monospace; letter-spacing: 1px; margin-top: 1px; }
+.acct-bal-row { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px; }
+.acct-bal-label { font-size: 7px; color: #B8D4F0; font-family: Arial, sans-serif; }
+.acct-bal { font-size: 14px; font-weight: 800; color: #02C39A; font-family: Arial Black, sans-serif; }
+
+.status-row { display: flex; align-items: center; gap: 5px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; animation: pb 2s ease-in-out infinite; }
+@keyframes pb { 0%,100%{opacity:1} 50%{opacity:.3} }
+.status-txt { font-size: 7px; color: #6b7280; font-family: Arial, sans-serif; }
+
+/* kiosk stand */
+.stand-neck { width: 60px; height: 18px; background: #111827; border-radius: 0 0 6px 6px; margin: 0 auto; }
+.stand-base { width: 200px; height: 14px; background: #111827; border-radius: 8px; margin: 0 auto; }
+
+/* bottom bezel */
+.bezel-bottom {
+  background: #0a0f1a;
+  padding: 5px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bezel-txt { font-size: 7px; color: #374151; font-family: Arial, sans-serif; }
+.bezel-right { display: flex; align-items: center; gap: 8px; }
+</style>
+
+<div class="scene">
+  <div class="scene-label">Union Bank of India — AI Self-Service Kiosk (Landscape)</div>
+
+  <div class="shell">
+    <div class="shell-inner">
+      <div class="screen">
+
+        <!-- LEFT: Brand + AI Voice -->
+        <div class="left-panel">
+          <div class="logo-bar">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="5" fill="white"/>
+              <path d="M5 7 L5 20 Q5 26 11 26 Q17 26 17 20 L17 7" stroke="#DA251C" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M17 7 L17 26 M17 7 L25 26 M25 7 L25 26" stroke="#00579C" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="logo-name">
+              <div class="logo-name-main">Union Bank</div>
+              <div class="logo-name-sub">OF INDIA</div>
+            </div>
+          </div>
+          <span class="slogan-badge"><span class="slogan-txt">Good People To Bank With</span></span>
+
+          <div class="avatar-block">
+            <div class="avatar-circle">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </div>
+            <div class="avatar-txt">
+              <div class="avatar-name">Aria — AI Assistant</div>
+              <div class="avatar-role">Union Bank · Powered by Gen-AI</div>
+            </div>
+          </div>
+
+          <div class="wave-col">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="listening-txt">Listening… speak or touch a service</div>
+
+          <div class="ai-bubble">
+            <strong>Aria</strong> "Namaste! Welcome to Union Bank. How can I assist you today? I support Hindi, Tamil, Telugu and more."
+          </div>
+
+          <div class="lang-chips">
+            <span class="lc lc-on">EN</span>
+            <span class="lc lc-off">हि</span>
+            <span class="lc lc-off">मर</span>
+            <span class="lc lc-off">தமிழ்</span>
+            <span class="lc lc-off">తె</span>
+            <span class="lc lc-off">ಕ</span>
+            <span class="lc lc-off">বাং</span>
+          </div>
+        </div>
+
+        <!-- CENTRE: Services -->
+        <div class="centre-panel">
+          <div class="centre-top">
+            <div class="centre-greeting">What can we help you with?</div>
+            <div class="centre-sub">Touch a service, speak your request, or insert your card to begin</div>
+          </div>
+          <div class="divider"></div>
+
+          <div class="svc-grid">
+            <div class="svc-card b">
+              <svg viewBox="0 0 24 24" fill="#00579C"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              <div class="svc-card-name">Balance & Statement</div>
+              <div class="svc-card-desc">Check balance, mini stmt</div>
+            </div>
+            <div class="svc-card r">
+              <svg viewBox="0 0 24 24" fill="#DA251C"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+              <div class="svc-card-name">Fund Transfer</div>
+              <div class="svc-card-desc">NEFT · RTGS · IMPS · UPI</div>
+            </div>
+            <div class="svc-card r">
+              <svg viewBox="0 0 24 24" fill="#DA251C"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+              <div class="svc-card-name">Card Services</div>
+              <div class="svc-card-desc">Block · PIN · Limit change</div>
+            </div>
+            <div class="svc-card b">
+              <svg viewBox="0 0 24 24" fill="#00579C"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+              <div class="svc-card-name">New Account</div>
+              <div class="svc-card-desc">Open savings / current</div>
+            </div>
+            <div class="svc-card b">
+              <svg viewBox="0 0 24 24" fill="#00579C"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+              <div class="svc-card-name">Loans & Apply</div>
+              <div class="svc-card-desc">Home · Personal · Gold</div>
+            </div>
+            <div class="svc-card r">
+              <svg viewBox="0 0 24 24" fill="#DA251C"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+              <div class="svc-card-name">Support & FAQs</div>
+              <div class="svc-card-desc">Raise complaint · Track</div>
+            </div>
+          </div>
+
+          <div class="recent-box">
+            <div class="recent-title">Recent transactions (last login)</div>
+            <div class="txn-row">
+              <div><div class="txn-desc">NEFT — Ramesh Kumar</div><div class="txn-date">15 Mar 2026</div></div>
+              <div class="txn-amt txn-dr">− ₹12,500</div>
+            </div>
+            <div class="txn-row">
+              <div><div class="txn-desc">UPI Credit — GPay</div><div class="txn-date">14 Mar 2026</div></div>
+              <div class="txn-amt txn-cr">+ ₹8,000</div>
+            </div>
+            <div class="txn-row">
+              <div><div class="txn-desc">ATM Withdrawal</div><div class="txn-date">13 Mar 2026</div></div>
+              <div class="txn-amt txn-dr">− ₹5,000</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Auth + Account -->
+        <div class="right-panel">
+          <div class="auth-section">
+            <div class="auth-title">Authenticate to begin</div>
+            <div class="auth-btn primary">
+              <svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+              <div class="auth-btn-txt">
+                <div class="auth-btn-name">Insert / Tap Card</div>
+                <div class="auth-btn-sub">EMV chip or NFC contactless</div>
+              </div>
+            </div>
+            <div class="auth-btn secondary">
+              <svg viewBox="0 0 24 24" fill="#00579C"><path d="M9 11.75A1.25 1.25 0 1 0 9 14.25 1.25 1.25 0 0 0 9 11.75zm6 0A1.25 1.25 0 1 0 15 14.25 1.25 1.25 0 0 0 15 11.75zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-8a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-7 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>
+              <div class="auth-btn-txt">
+                <div class="auth-btn-name">Face ID</div>
+                <div class="auth-btn-sub">Liveness + biometric verify</div>
+              </div>
+            </div>
+            <div class="auth-btn secondary">
+              <svg viewBox="0 0 24 24" fill="#718096"><path d="M20 18.5v.5H4v-.5c0-2.2 2.69-4 6-4h4c3.31 0 6 1.8 6 4zM12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/></svg>
+              <div class="auth-btn-txt">
+                <div class="auth-btn-name">Mobile OTP</div>
+                <div class="auth-btn-sub">Send OTP to registered mobile</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider-h"></div>
+
+          <div class="acct-preview">
+            <div class="acct-label">Authenticated account</div>
+            <div class="acct-name">Priya Sharma</div>
+            <div class="acct-num">•••• •••• 4521</div>
+            <div class="acct-bal-row">
+              <div>
+                <div class="acct-bal-label">Available balance</div>
+                <div class="acct-bal">₹1,84,320</div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="5" fill="rgba(255,255,255,.15)"/>
+                <path d="M5 7 L5 20 Q5 26 11 26 Q17 26 17 20 L17 7" stroke="#DA251C" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M17 7 L17 26 M17 7 L25 26 M25 7 L25 26" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="status-row">
+            <div class="status-dot"></div>
+            <span class="status-txt">Secure session · RBI compliant · Encrypted</span>
+          </div>
+        </div>
+
+      </div><!-- /screen -->
+
+      <!-- Bottom bezel -->
+      <div class="bezel-bottom">
+        <span class="bezel-txt">Union Bank AI Kiosk v2.1 · Branch: Connaught Place, New Delhi</span>
+        <div class="bezel-right">
+          <span class="bezel-txt">RBI Compliant · PCI-DSS Certified · ISO 27001</span>
+          <div style="display:flex;align-items:center;gap:3px">
+            <div style="width:5px;height:5px;border-radius:50%;background:#22c55e;animation:pb 2s ease-in-out infinite"></div>
+            <span class="bezel-txt" style="color:#22c55e">Online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stand -->
+  <div class="stand-neck"></div>
+  <div class="stand-base"></div>
+
+</div>
